@@ -1,7 +1,6 @@
 import React, {memo, useRef, useState} from 'react'
 import {useWindowDimensions, View} from 'react-native'
 import {runOnJS} from 'react-native-reanimated'
-import Animated from 'react-native-reanimated'
 import {
   AppBskyFeedDefs,
   type AppBskyFeedThreadgate,
@@ -736,10 +735,9 @@ function MobileComposePrompt({onPressReply}: {onPressReply: () => unknown}) {
   const {footerHeight} = useShellLayout()
 
   return (
-    <Animated.View
-      style={[a.fixed, a.left_0, a.right_0, {bottom: footerHeight}]}>
+    <View style={[a.fixed, a.left_0, a.right_0, {bottom: footerHeight}]}>
       <PostThreadComposePrompt onPressCompose={onPressReply} />
-    </Animated.View>
+    </View>
   )
 }
 
