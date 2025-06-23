@@ -11,10 +11,10 @@ import {useAnimatedScrollHandler} from '#/lib/hooks/useAnimatedScrollHandler_FIX
 import {useDedupe} from '#/lib/hooks/useDedupe'
 import {useScrollHandlers} from '#/lib/ScrollContext'
 import {addStyle} from '#/lib/styles'
-import {isAndroid, isIOS} from '#/platform/detection'
+import {isIOS} from '#/platform/detection'
 import {useLightbox} from '#/state/lightbox'
 import {useShellLayout} from '#/state/shell/shell-layout'
-import {ios, useTheme} from '#/alf'
+import {useTheme} from '#/alf'
 import {FlatList_INTERNAL} from './Views'
 
 export type ListMethods = FlatList_INTERNAL
@@ -162,7 +162,7 @@ let List = React.forwardRef<ListMethods, ListProps>(
         viewabilityConfig={viewabilityConfig}
         {...props}
         contentContainerStyle={[
-          isAndroid && {paddingBottom: footerHeight + footerExtensionHeight},
+          !isIOS && {paddingBottom: footerHeight + footerExtensionHeight},
           contentContainerStyle,
         ]}
         automaticallyAdjustsScrollIndicatorInsets={
@@ -174,13 +174,13 @@ let List = React.forwardRef<ListMethods, ListProps>(
           bottom: footerHeight + footerExtensionHeight,
           ...props.scrollIndicatorInsets,
         }}
-        contentInset={ios({
+        contentInset={{
           top: 0,
           left: 0,
           right: 0,
           bottom: footerHeight + footerExtensionHeight,
           ...props.contentInset,
-        })}
+        }}
         indicatorStyle={t.scheme === 'dark' ? 'white' : 'black'}
         contentOffset={contentOffset}
         refreshControl={refreshControl}
