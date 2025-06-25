@@ -2,12 +2,13 @@ import {useCallback, useEffect} from 'react'
 import {Platform} from 'react-native'
 import * as Notifications from 'expo-notifications'
 import {getBadgeCountAsync, setBadgeCountAsync} from 'expo-notifications'
-import {type AtpAgent} from '@atproto/api'
+import {type AppBskyNotificationRegisterPush, type AtpAgent} from '@atproto/api'
 import debounce from 'lodash.debounce'
 
 import {PUBLIC_APPVIEW_DID, PUBLIC_STAGING_APPVIEW_DID} from '#/lib/constants'
 import {Logger} from '#/logger'
 import {isNative} from '#/platform/detection'
+import {useAgeAssuranceContext} from '#/state/ageAssurance'
 import {type SessionAccount, useAgent, useSession} from '#/state/session'
 import BackgroundNotificationHandler from '#/../modules/expo-background-notification-handler'
 
@@ -21,25 +22,30 @@ async function _registerPushToken({
   agent,
   currentAccount,
   token,
+  extra = {},
 }: {
   agent: AtpAgent
   currentAccount: SessionAccount
   token: Notifications.DevicePushToken
+  extra?: {
+    ageRestricted?: boolean
+  }
 }) {
   try {
-    await agent.app.bsky.notification.registerPush({
+    const payload: AppBskyNotificationRegisterPush.InputSchema = {
       serviceDid: currentAccount.service?.includes('staging')
         ? PUBLIC_STAGING_APPVIEW_DID
         : PUBLIC_APPVIEW_DID,
       platform: Platform.OS,
       token: token.data,
       appId: 'xyz.blueskyweb.app',
-    })
+      // @ts-ignore
+      ageRestricted: extra.ageRestricted ?? false,
+    }
 
-    logger.debug(`registerPushToken: success`, {
-      tokenType: token.type,
-      token: token.data,
-    })
+    await agent.app.bsky.notification.registerPush(payload)
+
+    logger.debug(`registerPushToken: success`, {...payload})
   } catch (error) {
     logger.error(`registerPushToken: failed`, {safeMessage: error})
   }
@@ -61,6 +67,7 @@ const _registerPushTokenDebounced = debounce(_registerPushToken, 100)
 export function useRegisterPushToken() {
   const agent = useAgent()
   const {currentAccount} = useSession()
+  const {isAgeRestricted} = useAgeAssuranceContext()
 
   return useCallback(
     ({token}: {token: Notifications.DevicePushToken}) => {
@@ -69,9 +76,12 @@ export function useRegisterPushToken() {
         agent,
         currentAccount,
         token,
+        extra: {
+          ageRestricted: isAgeRestricted,
+        },
       })
     },
-    [agent, currentAccount],
+    [agent, currentAccount, isAgeRestricted],
   )
 }
 
