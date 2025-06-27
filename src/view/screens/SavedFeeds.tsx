@@ -393,8 +393,8 @@ function FollowingFeedCard() {
         a.align_center,
         a.flex_1,
         {
-          paddingHorizontal: 18,
-          paddingVertical: 20,
+          paddingHorizontal: 16,
+          paddingVertical: 16,
         },
       ]}>
       <View
