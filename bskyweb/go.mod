@@ -107,3 +107,7 @@ require (
 	gorm.io/gorm v1.25.9 // indirect
 	lukechampine.com/blake3 v1.2.1 // indirect
 )
+
+require github.com/ruizmr/omnimesh v0.0.0
+
+replace github.com/ruizmr/omnimesh => ../../
