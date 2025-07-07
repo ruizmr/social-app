@@ -82,6 +82,7 @@ export type CommonNavigatorParams = {
   StarterPackWizard: undefined
   StarterPackEdit: {rkey?: string}
   VideoFeed: VideoFeedSourceContext
+  NetworkWizard: undefined
 }
 
 export type BottomTabNavigatorParams = CommonNavigatorParams & {
