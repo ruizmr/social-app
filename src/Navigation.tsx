@@ -600,6 +600,11 @@ function commonScreens(Stack: typeof Flat, unreadCountLabel?: string) {
           requireAuth: true,
         }}
       />
+      <Stack.Screen
+        name="NetworkWizard"
+        getComponent={() => require('#/screens/NetworkWizard').default}
+        options={{title: title(msg`Mesh Network`), requireAuth: true}}
+      />
     </>
   )
 }

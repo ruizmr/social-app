@@ -7,6 +7,8 @@ import {
 import {msg} from '@lingui/macro'
 import {useLingui} from '@lingui/react'
 import * as EmailValidator from 'email-validator'
+import {useNavigation} from '@react-navigation/native'
+import {NavigationProp} from '#/lib/routes/types'
 
 import {DEFAULT_SERVICE} from '#/lib/constants'
 import {cleanError} from '#/lib/strings/errors'
@@ -252,6 +254,7 @@ export function useSubmitSignup() {
   const {_} = useLingui()
   const {createAccount} = useSessionApi()
   const onboardingDispatch = useOnboardingDispatch()
+  const navigation = useNavigation<NavigationProp>()
 
   return useCallback(
     async (state: SignupState, dispatch: (action: SignupAction) => void) => {
@@ -325,11 +328,9 @@ export function useSubmitSignup() {
           },
         )
 
-        /*
-         * Must happen last so that if the user has multiple tabs open and
-         * createAccount fails, one tab is not stuck in onboarding — Eric
-         */
-        onboardingDispatch({type: 'start'})
+        // Navigate to Mesh Network wizard before onboarding
+        navigation.navigate('NetworkWizard')
+        return
       } catch (e: any) {
         let errMsg = e.toString()
         if (e instanceof ComAtprotoServerCreateAccount.InvalidInviteCodeError) {
@@ -363,6 +364,6 @@ export function useSubmitSignup() {
         dispatch({type: 'setIsLoading', value: false})
       }
     },
-    [_, onboardingDispatch, createAccount],
+    [_, navigation, createAccount],
   )
 }
