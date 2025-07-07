@@ -342,9 +342,13 @@ func serve(cctx *cli.Context) error {
 		e.Group("/:linkId", server.LinkProxyMiddleware(linkUrl))
 	}
 
-	// signup
-	e.GET("/signup", server.WebSignup)
+	// signup and root served by SPA bundle
+	e.GET("/", server.ServeIndex)
+	e.GET("/signup", server.ServeIndex)
 	e.POST("/api/signup", server.ApiSignup)
+
+	// catch-all for client-side routes handled by SPA
+	e.GET("/*", server.ServeIndex)
 
 	// Start the server.
 	log.Infof("starting server address=%s", httpAddress)
@@ -655,10 +659,13 @@ func (srv *Server) WebIpCC(c echo.Context) error {
 	return c.JSON(200, outResponse)
 }
 
-func (srv *Server) WebSignup(c echo.Context) error {
-	// very simple page; in real UI this would be SPA route.
-	html := `<html><head><title>OmniMesh Signup</title></head><body><h1>Create OmniMesh Identity</h1><form id="f"><label>Password: <input type="password" name="pw"/></label><br/><label>Confirm: <input type="password" name="pw2"/></label><br/><button type="submit">Create</button></form><pre id="out"></pre><script>document.getElementById('f').addEventListener('submit',async (e)=>{e.preventDefault();const pw=e.target.pw.value;const pw2=e.target.pw2.value;if(pw!==pw2){alert('Passwords must match');return;}const r=await fetch('/api/signup',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({password:pw})});const j=await r.json();document.getElementById('out').textContent=JSON.stringify(j,null,2);});</script></body></html>`
-	return c.HTML(http.StatusOK, html)
+// ServeIndex serves the React SPA entrypoint embedded under static/dist.
+func (srv *Server) ServeIndex(c echo.Context) error {
+	data, err := bskyweb.StaticFS.ReadFile("static/dist/index.html")
+	if err != nil {
+		return err
+	}
+	return c.HTML(http.StatusOK, string(data))
 }
 
 type signupReq struct {
