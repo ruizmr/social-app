@@ -7,6 +7,7 @@ import {useProfileFollowMutationQueue} from '#/state/queries/profile'
 import * as bsky from '#/types/bsky'
 import {Button, ButtonType} from '../util/forms/Button'
 import * as Toast from '../util/Toast'
+import {useNetworks} from '#/state/networks'
 
 export function FollowButton({
   unfollowedType = 'inverted',
@@ -27,7 +28,12 @@ export function FollowButton({
     profile,
     logContext,
   )
+
+  const {isNetworkDid, isMember} = useNetworks()
+
   const {_} = useLingui()
+
+  const isMesh = isNetworkDid(profile.did)
 
   const onPressFollow = async () => {
     try {
@@ -60,7 +66,7 @@ export function FollowButton({
         type={followedType}
         labelStyle={labelStyle}
         onPress={onPressUnfollow}
-        label={_(msg({message: 'Unfollow', context: 'action'}))}
+        label={isMesh ? _(msg`Leave network`) : _(msg({message: 'Unfollow', context: 'action'}))}
       />
     )
   } else if (!profile.viewer.followedBy) {
@@ -69,7 +75,7 @@ export function FollowButton({
         type={unfollowedType}
         labelStyle={labelStyle}
         onPress={onPressFollow}
-        label={_(msg({message: 'Follow', context: 'action'}))}
+        label={isMesh ? _(msg`Join network`) : _(msg({message: 'Follow', context: 'action'}))}
       />
     )
   } else {
@@ -78,7 +84,7 @@ export function FollowButton({
         type={unfollowedType}
         labelStyle={labelStyle}
         onPress={onPressFollow}
-        label={_(msg({message: 'Follow Back', context: 'action'}))}
+        label={isMesh ? _(msg`Join back`) : _(msg({message: 'Follow Back', context: 'action'}))}
       />
     )
   }

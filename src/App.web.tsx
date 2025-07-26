@@ -63,6 +63,8 @@ import {Provider as ActiveVideoProvider} from '#/components/Post/Embed/VideoEmbe
 import {Provider as VideoVolumeProvider} from '#/components/Post/Embed/VideoEmbed/VideoVolumeContext'
 import {BackgroundNotificationPreferencesProvider} from '../modules/expo-background-notification-handler/src/BackgroundNotificationHandlerProvider'
 import {Provider as HideBottomBarBorderProvider} from './lib/hooks/useHideBottomBarBorder'
+import {MeshSessionProvider} from '#/state/meshSession'
+import {NetworksProvider} from '#/state/networks'
 
 /**
  * Begin geolocation ASAP
@@ -135,10 +137,12 @@ function InnerApp() {
                                                 <ProgressGuideProvider>
                                                   <ServiceConfigProvider>
                                                     <HideBottomBarBorderProvider>
-                                                      <IntentDialogProvider>
-                                                        <Shell />
-                                                        <NuxDialogs />
-                                                      </IntentDialogProvider>
+                                                      <NetworksProvider>
+                                                        <IntentDialogProvider>
+                                                          <Shell />
+                                                          <NuxDialogs />
+                                                        </IntentDialogProvider>
+                                                      </NetworksProvider>
                                                     </HideBottomBarBorderProvider>
                                                   </ServiceConfigProvider>
                                                 </ProgressGuideProvider>
@@ -186,31 +190,33 @@ function App() {
    * that is set up in the InnerApp component above.
    */
   return (
-    <GeolocationProvider>
-      <A11yProvider>
-        <SessionProvider>
-          <PrefsStateProvider>
-            <I18nProvider>
-              <ShellStateProvider>
-                <InvitesStateProvider>
-                  <ModalStateProvider>
-                    <DialogStateProvider>
-                      <LightboxStateProvider>
-                        <PortalProvider>
-                          <StarterPackProvider>
-                            <InnerApp />
-                          </StarterPackProvider>
-                        </PortalProvider>
-                      </LightboxStateProvider>
-                    </DialogStateProvider>
-                  </ModalStateProvider>
-                </InvitesStateProvider>
-              </ShellStateProvider>
-            </I18nProvider>
-          </PrefsStateProvider>
-        </SessionProvider>
-      </A11yProvider>
-    </GeolocationProvider>
+    <MeshSessionProvider>
+      <GeolocationProvider>
+        <A11yProvider>
+          <SessionProvider>
+            <PrefsStateProvider>
+              <I18nProvider>
+                <ShellStateProvider>
+                  <InvitesStateProvider>
+                    <ModalStateProvider>
+                      <DialogStateProvider>
+                        <LightboxStateProvider>
+                          <PortalProvider>
+                            <StarterPackProvider>
+                              <InnerApp />
+                            </StarterPackProvider>
+                          </PortalProvider>
+                        </LightboxStateProvider>
+                      </DialogStateProvider>
+                    </ModalStateProvider>
+                  </InvitesStateProvider>
+                </ShellStateProvider>
+              </I18nProvider>
+            </PrefsStateProvider>
+          </SessionProvider>
+        </A11yProvider>
+      </GeolocationProvider>
+    </MeshSessionProvider>
   )
 }
 

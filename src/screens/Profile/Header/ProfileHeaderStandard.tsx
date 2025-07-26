@@ -1,4 +1,4 @@
-import React, {memo, useMemo} from 'react'
+import React, {memo, useMemo, useState} from 'react'
 import {View} from 'react-native'
 import {
   type AppBskyActorDefs,
@@ -40,6 +40,10 @@ import {EditProfileDialog} from './EditProfileDialog'
 import {ProfileHeaderHandle} from './Handle'
 import {ProfileHeaderMetrics} from './Metrics'
 import {ProfileHeaderShell} from './Shell'
+import { useOmnimesh } from '#/lib/hooks/useOmnimesh';
+import { Loader } from '#/components/Loader'; // Bluesky loader
+import { Check } from '#/components/icons/Check'; // Success icon
+import { MotiView, AnimatePresence } from 'moti'; // For animations
 
 interface Props {
   profile: AppBskyActorDefs.ProfileViewDetailed
@@ -79,24 +83,23 @@ let ProfileHeaderStandard = ({
     profile.viewer?.blockingByList
 
   const editProfileControl = useDialogControl()
+  const { joinNetwork, leaveNetwork } = useOmnimesh();
+  const [isJoining, setIsJoining] = useState(false);
+  const [joinError, setJoinError] = useState<string | null>(null);
 
-  const onPressFollow = () => {
+  const onPressFollow = async () => {
+    setIsJoining(true);
+    setJoinError(null);
     requireAuth(async () => {
       try {
-        await queueFollow()
-        Toast.show(
-          _(
-            msg`Following ${sanitizeDisplayName(
-              profile.displayName || profile.handle,
-              moderation.ui('displayName'),
-            )}`,
-          ),
-        )
+        await queueFollow();
+        await joinNetwork(profile.did);
+        Toast.show(`Following ${sanitizeDisplayName(profile.displayName || profile.handle)}`);
       } catch (e: any) {
-        if (e?.name !== 'AbortError') {
-          logger.error('Failed to follow', {message: String(e)})
-          Toast.show(_(msg`There was an issue! ${e.toString()}`), 'xmark')
-        }
+        setJoinError(e.message);
+        Toast.show(`Error: ${e.message}`);
+      } finally {
+        setIsJoining(false);
       }
     })
   }
@@ -104,7 +107,8 @@ let ProfileHeaderStandard = ({
   const onPressUnfollow = () => {
     requireAuth(async () => {
       try {
-        await queueUnfollow()
+        await queueUnfollow();
+        await leaveNetwork(profile.did);
         Toast.show(
           _(
             msg`No longer following ${sanitizeDisplayName(
@@ -245,6 +249,11 @@ let ProfileHeaderStandard = ({
                     <Trans>Follow</Trans>
                   )}
                 </ButtonText>
+                <AnimatePresence>
+                  {!isJoining && !joinError && <MotiView from={{ opacity: 0 }} animate={{ opacity: 1 }}><Check size="sm" fill="green" /></MotiView>}
+                </AnimatePresence>
+                {isJoining ? <Loader size="sm" /> : null}
+                {joinError && <Text style={[a.mt_s5, t.atoms.text_contrast_high, a.p_s1, a.rounded_sm, { backgroundColor: t.palette.negative_400 }]}>{joinError}</Text>}
               </Button>
             </>
           ) : null}
